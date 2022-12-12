@@ -15,16 +15,16 @@ data "cloudinit_config" "config" {
 
   part {
     content_type = "text/cloud-config"
-    content      = templatefile("${path.module}/cloud_config.yaml", {})
+    content      = file("${path.module}/cloud_config.yaml")
   }
 }
 
 resource "aws_instance" "wordpress" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.small"
-  key_name      = "default"
+  key_name      = var.ec2_keypair
 
   vpc_security_group_ids = [aws_security_group.ec2.id]
 
-  user_data = data.cloudinit_config.config.rendered
+  user_data_base64 = data.cloudinit_config.config.rendered
 }

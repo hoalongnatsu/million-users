@@ -1,5 +1,5 @@
 resource "aws_security_group" "ec2" {
-  name = "ec2"
+  name = "access-ec2"
 
   ingress {
     from_port   = 22

@@ -1,0 +1,61 @@
+#cloud-config
+write_files:
+  - path: /etc/httpd/conf/httpd.conf
+    owner: root:root
+    permissions: "0644"
+    content: |
+      <Directory "/var/www/html">
+        #
+        # Possible values for the Options directive are "None", "All",
+        # or any combination of:
+        #   Indexes Includes FollowSymLinks SymLinksifOwnerMatch ExecCGI MultiViews
+        #
+        # Note that "MultiViews" must be named *explicitly* --- "Options All"
+        # doesn't give it to you.
+        #
+        # The Options directive is both complicated and important.  Please see
+        # http://httpd.apache.org/docs/2.4/mod/core.html#options
+        # for more information.
+        #
+        Options Indexes FollowSymLinks
+
+        #
+        # AllowOverride controls what directives may be placed in .htaccess files.
+        # It can be "All", "None", or any combination of the keywords:
+        #   Options FileInfo AuthConfig Limit
+        #
+        AllowOverride None
+
+        #
+        # Controls who can get stuff from this server.
+        #
+        Require all granted
+      </Directory>
+
+runcmd:
+  # Apache
+  - sudo yum update -y
+  - sudo yum install -y wget httpd
+  - sudo systemctl start httpd
+  - sudo systemctl enable httpd
+
+  # PHP
+  - sudo amazon-linux-extras install -y php7.2
+  - sudo systemctl restart php-fpm
+
+  # WordPress
+  - wget https://wordpress.org/latest.tar.gz
+  - tar -xzf latest.tar.gz
+  - sudo cp -r wordpress/* /var/www/html/
+  - sudo chown -R apache /var/www
+  - sudo chgrp -R apache /var/www
+  - sudo chmod 2775 /var/www
+  - find /var/www -type d -exec sudo chmod 2775 {} \;
+  - find /var/www -type f -exec sudo chmod 0644 {} \;
+  - sudo systemctl restart httpd
+
+  - sudo cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
+
+packages:
+  - wget
+  - unzip

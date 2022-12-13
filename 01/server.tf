@@ -15,7 +15,12 @@ data "cloudinit_config" "config" {
 
   part {
     content_type = "text/cloud-config"
-    content      = file("${path.module}/cloud_config.yaml")
+    content      = templatefile("${path.module}/cloud_config.yaml", {
+      endpoint = aws_rds_cluster.mysql.endpoint,
+      database_name = aws_rds_cluster.mysql.database_name,
+      master_username = aws_rds_cluster.mysql.master_username,
+      master_password = aws_rds_cluster.mysql.master_password
+    })
   }
 }
 

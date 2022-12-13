@@ -32,4 +32,8 @@ resource "aws_instance" "wordpress" {
   vpc_security_group_ids = [aws_security_group.ec2.id]
 
   user_data_base64 = data.cloudinit_config.config.rendered
+
+  tags = {
+    "Name" = "WordPress"
+  }
 }

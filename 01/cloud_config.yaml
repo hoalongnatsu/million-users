@@ -8,6 +8,7 @@ runcmd:
 
   # PHP
   - sudo amazon-linux-extras install -y php7.2
+  - sudo yum -y install php-xml
   - sudo systemctl restart php-fpm
 
   # WordPress

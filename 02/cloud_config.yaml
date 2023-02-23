@@ -1,0 +1,45 @@
+#cloud-config
+runcmd:
+  # Apache
+  - sudo yum update -y
+  - sudo yum install -y wget httpd
+  - sudo systemctl start httpd
+  - sudo systemctl enable httpd
+
+  # PHP
+  - sudo amazon-linux-extras install -y php7.2
+  - sudo yum -y install php-xml
+  - sudo systemctl restart php-fpm
+
+  # WordPress
+  - cd /home/ec2-user
+  - wget https://wordpress.org/latest.tar.gz
+  - tar -xzf latest.tar.gz
+  - sudo mkdir -p /var/www/html
+  - sudo cp -r wordpress/* /var/www/html/
+  - sed -i 's/AllowOverride None/AllowOverride All/' /etc/httpd/conf/httpd.conf
+  - sudo chown -R apache /var/www
+  - sudo chgrp -R apache /var/www
+  - sudo chmod 2775 /var/www
+  - find /var/www -type d -exec sudo chmod 2775 {} \;
+  - find /var/www -type f -exec sudo chmod 0644 {} \;
+
+  - sudo cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
+
+  - sudo sed -i 's/localhost/${endpoint}/g' /var/www/html/wp-config.php
+  - sudo sed -i 's/database_name_here/${database_name}/g' /var/www/html/wp-config.php
+  - sudo sed -i 's/username_here/${master_username}/g' /var/www/html/wp-config.php
+  - sudo sed -i 's/password_here/${master_password}/g' /var/www/html/wp-config.php
+
+  - sudo curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+  - sudo chmod +x wp-cli.phar
+  - sudo mv wp-cli.phar /usr/bin/wp
+
+  - cd /var/www/html
+  - sudo wp core install --url=${wp_url} --title=${wp_title} --admin_user=${wp_admin_user} --admin_password=${wp_admin_password} --admin_email=${wp_admin_email}
+
+  - sudo systemctl restart httpd
+
+packages:
+  - wget
+  - unzip
